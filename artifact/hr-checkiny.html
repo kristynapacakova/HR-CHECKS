@@ -268,6 +268,7 @@ details.transcript pre {
 .cal-ev.orange { border-left-color: var(--orange); background: var(--orange-bg); }
 .cal-ev.red { border-left-color: var(--red); background: var(--red-bg); }
 .cal-ev.overdue { border-left-color: var(--red); background: var(--surface); outline: 1px dashed var(--red); }
+.cal-ev.google { border-left-color: var(--grey); background: var(--grey-bg); color: var(--ink-soft); }
 .cal-ev.start { border-left-color: var(--aqua-deep); background: var(--aqua-bg); }
 
 /* ---------- formuláře a tlačítka ---------- */
@@ -503,6 +504,9 @@ const state = {
   downloads: null,
   mcp: null,
   gcalBusy: false,
+  gcalError: "", // poslední chyba propojení s Google Kalendářem
+  gcalEvents: [], // tvoje události z Google Kalendáře pro zobrazený měsíc
+  gcalWatch: null, // { key, unsub }
 };
 
 // ---------- pomocné funkce ----------
@@ -921,11 +925,12 @@ function openPersonForm(existing) {
       const data = Object.fromEntries(new FormData(e.target));
       if (existing) {
         Object.assign(existing, data);
-        if (isSynced(existing)) setTimeout(() => runSync([existing], { quiet: true }));
+        if (isSynced(existing) || autoSync()) setTimeout(() => runSync([existing], { quiet: true }));
       } else {
         const p = { id: uid(), ...data, checkins: {}, notes: [], createdAt: new Date().toISOString() };
         state.db.people.push(p);
         go(`#/clovek/${p.id}`);
+        if (autoSync()) setTimeout(() => runSync([p]));
       }
       save();
       closeModal();
@@ -1083,6 +1088,7 @@ function viewPerson(id) {
       </div>
     </div>
 
+    ${state.gcalError ? `<div class="banner" style="margin-top:16px">${esc(state.gcalError)}</div>` : ""}
     <div class="section-head"><h2>Check-iny během adaptace</h2></div>
     <div class="timeline stack">
       ${settings().checkpoints.map((cp) => checkinCard(p, cp, today)).join("")}
@@ -1151,11 +1157,11 @@ function checkinCard(p, cp, today) {
           <input id="d-${p.id}-${cp.id}" type="date" value="${date}" data-change="ci-date" data-id="${p.id}" data-cp="${cp.id}" style="flex:2;min-width:0">
           <input id="t-${p.id}-${cp.id}" type="time" value="${checkinTime(ci)}" data-change="ci-time" data-id="${p.id}" data-cp="${cp.id}" aria-label="Čas schůzky" style="flex:1;min-width:0">
         </div>
-        ${ci?.gcal
+        ${ci?.gcal?.eventId
           ? `<div class="small" style="margin-top:4px">📅 V Google Kalendáři · <a href="https://calendar.google.com/calendar/r/day/${date.replace(/-/g, "/")}" target="_blank" rel="noopener">otevřít</a></div>`
           : !done
             ? state.mcp
-              ? `<div class="small muted" style="margin-top:4px">Do Google Kalendáře zapíšeš tlačítkem nahoře u člověka.</div>`
+              ? `<div class="small muted" style="margin-top:4px">Zatím není v Google Kalendáři – zapíše se tlačítkem nahoře u člověka.</div>`
               : `<div class="small" style="margin-top:4px">Přidat do kalendáře: <a href="${gcalLink(p, cp, date)}" target="_blank" rel="noopener">Google</a> · <a href="${outlookLink(p, cp, date)}" target="_blank" rel="noopener">Outlook</a></div>`
             : ""}
       </div>
@@ -1258,10 +1264,13 @@ function viewCalendar() {
     days.push(toIso(d));
   }
   if (days.slice(35).every((d) => !d.startsWith(base))) days.length = 35;
+  ensureGcalWatch(days[0], addDays(days[days.length - 1], 1));
 
   const byDate = {};
   for (const mt of allMeetings()) (byDate[mt.date] ||= []).push({ type: "meeting", ...mt });
   for (const p of state.db.people.filter((x) => !x.archived)) (byDate[p.startDate] ||= []).push({ type: "start", person: p });
+  const ownIds = new Set(state.db.people.flatMap((p) => Object.values(p.checkins || {}).map((ci) => ci.gcal?.eventId).filter(Boolean)));
+  for (const ev of state.gcalEvents) if (!ownIds.has(ev.id)) (byDate[ev.date] ||= []).push({ type: "google", ...ev });
 
   const monthName = first.toLocaleDateString("cs-CZ", { month: "long", year: "numeric" });
   const dows = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
@@ -1283,13 +1292,17 @@ function viewCalendar() {
       <span class="cal-ev green" style="display:inline-block">souzní</span>
       <span class="cal-ev orange" style="display:inline-block">pozor</span>
       <span class="cal-ev red" style="display:inline-block">red flag</span>
+      ${state.mcp ? `<span class="cal-ev google" style="display:inline-block">tvůj Google Kalendář</span>` : ""}
     </div>
+    ${gcalStatusBanner()}
     <div class="cal">
       ${dows.map((d) => `<div class="cal-dow">${d}</div>`).join("")}
       ${days.map((d) => `
         <div class="cal-day ${d.startsWith(base) ? "" : "other"} ${d === today ? "today" : ""}">
           <div class="cal-num">${parseIso(d).getDate()}</div>
-          ${(byDate[d] || []).map((ev) => ev.type === "start"
+          ${(byDate[d] || []).map((ev) => ev.type === "google"
+            ? `<a class="cal-ev google" href="${esc(ev.link)}" target="_blank" rel="noopener" title="Google Kalendář: ${esc(ev.summary)}">${ev.time ? `${esc(ev.time)} ` : ""}${esc(ev.summary)}</a>`
+            : ev.type === "start"
             ? `<a class="cal-ev start" href="#/clovek/${ev.person.id}" title="Nástup: ${esc(ev.person.name)}">🎉 ${esc(ev.person.name)}</a>`
             : `<a class="cal-ev ${ev.status || (!ev.done && ev.date < today ? "overdue" : "")}" href="#/clovek/${ev.person.id}" title="${esc(ev.person.name)} – ${esc(ev.cp.label)}">${esc(ev.person.name)} · ${esc(ev.cp.label)}</a>`,
           ).join("")}
@@ -1364,11 +1377,15 @@ function viewSettings() {
         <h2>Google Kalendář</h2>
         <p class="small muted">${state.mcp
           ? "Check-iny se zapisují jako soukromé události do tvého hlavního Google Kalendáře. Když v appce posuneš termín, událost se posune taky. Přepisy ani hodnocení do kalendáře nejdou."
-          : "Propojení s Google Kalendářem tu není dostupné. Připoj ho na claude.ai v Settings → Connectors."}</p>
+          : "Propojení s Google Kalendářem tu není dostupné. Připoj ho na claude.ai v Settings → Connectors a stránku obnov."} Kalendář v appce ukazuje šedě i tvoje ostatní schůzky z Googlu.</p>
         <div style="max-width:220px">
           <label for="cal-default-time">Výchozí čas schůzek</label>
           <input id="cal-default-time" type="time" value="${esc(settings().calendar?.defaultTime || "10:00")}" data-setting="defaultTime">
         </div>
+        <label class="row" style="margin-top:12px;font-weight:500">
+          <input id="cal-auto" type="checkbox" style="width:auto" data-setting="autoSync" ${settings().calendar?.autoSync !== false ? "checked" : ""}>
+          Zapisovat check-iny do Google Kalendáře automaticky (po přidání člověka a při změně termínu)
+        </label>
       </div>
 
       <div class="card">
@@ -1640,6 +1657,7 @@ const GCAL_ERRORS = {
   capability_disabled: "Propojení s kalendářem tu není dostupné.",
 };
 function gcalErrorText(e) {
+  if (e?.code === "no_event_id") return "Událost se v Google Kalendáři vytvořila, ale appka nezná její ID – napiš prosím Claudovi.";
   if (e?.code === "tool_error") return "Google Kalendář akci odmítl" + (e.message ? `: ${e.message}` : ".");
   return GCAL_ERRORS[e?.code] || "Zápis do Google Kalendáře se nepovedl. Zkontroluj kalendář a zkus to znovu.";
 }
@@ -1648,6 +1666,50 @@ async function gcal(tool, input) {
   if (!state.mcp) throw { code: "not_granted" };
   const res = await state.mcp.callTool(GCAL, tool, input, { cache: false });
   return res?.payload ?? res;
+}
+
+function gcalStatusBanner() {
+  if (!state.mcp) return `<div class="banner" style="margin-bottom:12px">Google Kalendář tu není propojený. Připoj ho na claude.ai v Settings → Connectors a stránku obnov.</div>`;
+  if (state.gcalError) return `<div class="banner" style="margin-bottom:12px">${esc(state.gcalError)}</div>`;
+  return "";
+}
+
+const GCAL_DENIALS = new Set(["needs_reauth", "server_not_connected", "not_in_manifest", "blocked_by_policy", "approval_required", "selection_required"]);
+
+/** Načítá (a průběžně obnovuje) tvoje Google události pro zobrazený rozsah. Odebírá jen při změně rozsahu. */
+function ensureGcalWatch(from, to) {
+  if (!state.mcp?.watchTool) return;
+  const key = `${from}/${to}`;
+  if (state.gcalWatch?.key === key) return;
+  state.gcalWatch?.unsub();
+  state.gcalEvents = [];
+  const input = { startTime: `${from}T00:00:00`, endTime: `${to}T00:00:00`, timeZone: "Europe/Prague", orderBy: "startTime", pageSize: 250 };
+  const unsub = state.mcp.watchTool(GCAL, "list_events", input, (ev) => {
+    if (state.gcalWatch?.key !== key) return;
+    if (ev.type === "data") {
+      const list = ev.result?.payload?.events;
+      state.gcalEvents = Array.isArray(list) ? list.map(toGcalEvent).filter(Boolean) : [];
+      if (state.gcalError) state.gcalError = "";
+    } else {
+      if (GCAL_DENIALS.has(ev.error?.code)) state.gcalEvents = [];
+      state.gcalError = gcalErrorText(ev.error);
+    }
+    if (state.route === "kalendar") renderSoon();
+  }, { refetchInterval: 5 * 60 * 1000 });
+  state.gcalWatch = { key, unsub };
+}
+
+function toGcalEvent(e) {
+  if (!e || e.status === "cancelled") return null;
+  const start = e.start?.dateTime || e.start?.date;
+  if (!start) return null;
+  return {
+    id: e.id,
+    summary: e.summary || "(bez názvu)",
+    date: start.slice(0, 10),
+    time: e.start?.dateTime ? start.slice(11, 16) : "",
+    link: typeof e.htmlLink === "string" && e.htmlLink.startsWith("https://") ? e.htmlLink : "https://calendar.google.com/",
+  };
 }
 
 /** Zapíše / aktualizuje check-iny člověka v Google Kalendáři. Vrací počty. */
@@ -1659,14 +1721,16 @@ async function syncPerson(p) {
     if (isDone(ci) && !ci.gcal) continue; // proběhlé schůzky se nově nezapisují
     const spec = eventSpec(p, cp);
     const key = specKey(spec);
-    if (ci.gcal) {
-      if (ci.gcal.key === key || !ci.gcal.eventId) continue;
+    if (ci.gcal?.eventId) {
+      if (ci.gcal.key === key) continue;
       await gcal("update_event", { eventId: ci.gcal.eventId, ...spec, notificationLevel: "NONE" });
       ci.gcal = { ...ci.gcal, key };
       out.updated++;
     } else {
       const payload = await gcal("create_event", { ...spec, notificationLevel: "NONE" });
-      ci.gcal = { eventId: findEventId(payload), key };
+      const eventId = findEventId(payload);
+      if (!eventId) throw { code: "no_event_id" };
+      ci.gcal = { eventId, key };
       out.created++;
     }
     save();
@@ -1674,7 +1738,8 @@ async function syncPerson(p) {
   return out;
 }
 
-const isSynced = (p) => Object.values(p.checkins || {}).some((ci) => ci.gcal);
+const isSynced = (p) => Object.values(p.checkins || {}).some((ci) => ci.gcal?.eventId);
+const autoSync = () => Boolean(state.mcp) && settings().calendar?.autoSync !== false;
 
 async function runSync(people, { quiet = false } = {}) {
   if (!state.mcp || state.gcalBusy) return;
@@ -1687,13 +1752,16 @@ async function runSync(people, { quiet = false } = {}) {
       created += r.created;
       updated += r.updated;
     }
+    state.gcalError = "";
+    state.mcp.invalidate?.(GCAL, "list_events").catch(() => {});
     if (!quiet || created || updated) {
       toast(created || updated
         ? `Google Kalendář: ${created ? `přidáno ${created}` : ""}${created && updated ? ", " : ""}${updated ? `upraveno ${updated}` : ""}`
         : "Google Kalendář je aktuální");
     }
   } catch (e) {
-    toast(gcalErrorText(e));
+    state.gcalError = gcalErrorText(e);
+    toast(state.gcalError);
   } finally {
     state.gcalBusy = false;
     save();
@@ -1872,7 +1940,7 @@ function bindEvents() {
       const ci = getCheckin(p, el.dataset.cp);
       if (el.dataset.change === "ci-date") ci.date = el.value || null;
       if (el.dataset.change === "ci-time") ci.time = el.value || null;
-      if ((el.dataset.change === "ci-date" || el.dataset.change === "ci-time") && ci.gcal) {
+      if ((el.dataset.change === "ci-date" || el.dataset.change === "ci-time") && (ci.gcal?.eventId || autoSync())) {
         save(); render(); runSync([p], { quiet: true }); return;
       }
       if (el.dataset.change === "ci-manual") ci.manualStatus = el.value || null;
@@ -1881,9 +1949,10 @@ function bindEvents() {
       return;
     }
     if (el.dataset.setting) {
-      settings().calendar = { ...(settings().calendar || {}), [el.dataset.setting]: el.value || "10:00" };
+      const value = el.type === "checkbox" ? el.checked : el.value || "10:00";
+      settings().calendar = { ...(settings().calendar || {}), [el.dataset.setting]: value };
       save();
-      toast("Uloženo – platí pro schůzky bez vlastního času");
+      toast(el.type === "checkbox" ? (value ? "Automatický zápis zapnutý" : "Automatický zápis vypnutý") : "Uloženo – platí pro schůzky bez vlastního času");
       return;
     }
     if (el.dataset.edit) {
