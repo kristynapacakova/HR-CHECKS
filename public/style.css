@@ -281,6 +281,16 @@ textarea { resize: vertical; min-height: 90px; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+details.guide { margin-top: 14px; background: var(--mist); border-radius: 12px; padding: 12px 16px; }
+details.guide summary { cursor: pointer; font-weight: 600; }
+.questions { margin: 10px 0 12px; padding-left: 22px; }
+.questions li + li { margin-top: 6px; }
+.crit { border-radius: 10px; padding: 10px 12px; font-size: .88rem; }
+.crit.green { background: var(--green-bg); }
+.crit.red { background: var(--red-bg); }
+.cp-edit { display: grid; gap: 12px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.cp-edit:first-child { padding-top: 4px; }
+
 @media (max-width: 720px) {
   h1 { font-size: 1.4rem; }
   .cal { gap: 3px; }

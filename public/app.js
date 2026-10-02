@@ -5,33 +5,103 @@
 // =====================================================================
 
 const DEFAULT_SETTINGS = {
+  version: 2,
   values: [
-    { id: "v-vysledky", name: "Výsledky mluví za nás", description: "Práci dotahuje do konce, zajímá ho/ji reálný dopad a měřitelný výsledek, ne jen odvedená činnost." },
-    { id: "v-data", name: "Data a vědecký přístup", description: "Rozhoduje se na základě dat, testuje hypotézy, ověřuje si fakta místo dojmů." },
-    { id: "v-primost", name: "Osobní a přímý přístup", description: "Mluví narovinu, lidsky a bez zbytečné formálnosti – s kolegy i s klienty." },
-    { id: "v-otevrenost", name: "Radikální otevřenost", description: "Otevřeně pojmenuje rizika, chyby i očekávání; sám/sama o zpětnou vazbu stojí a umí ji přijmout." },
-    { id: "v-marketing", name: "Marketing nás baví", description: "Opravdový zájem o obor, zvídavost, chuť se učit a sledovat novinky." },
-    { id: "v-vpred", name: "Posouváme se vpřed", description: "Iniciativa, růstové myšlení, přináší vlastní nápady a unikátní zkušenost z předchozí kariéry." },
-    { id: "v-tym", name: "Tým a odpovědnost", description: "Spolehlivost, ownership za svou část, ochota pomoct týmu." },
+    { id: "v-pravda", name: "Pravda bez výmluv", description: "Mluví narovinu, řekne, jak věci jsou, i když to není příjemné. Nehledá výmluvy ani alibi." },
+    { id: "v-chyby", name: "Chyby jsou příležitost", description: "Chybu přizná, postaví se k ní, poučí se a zlepší se. Nebojí se zkoušet nové věci." },
+    { id: "v-makame", name: "Makáme – nečekáme", description: "Proaktivita a ownership: nečeká na pokyn, jde do toho, věci dotahuje a pomůže týmu, když je potřeba." },
+    { id: "v-diskomfort", name: "Diskomfort je cesta", description: "Bere i nepopulární a náročné úkoly, zvládá tlak, roste skrz nepohodlí a nehledá pohodlí." },
+    { id: "v-nasloucháme", name: "Nasloucháme", description: "Poslouchá kolegy i klienty, přijímá zpětnou vazbu, problémy řeší konstruktivně a s respektem." },
   ],
   redFlags: [
-    { id: "r-vina", name: "Svalování viny", description: "Vyhýbá se odpovědnosti, chyby připisuje ostatním nebo okolnostem." },
-    { id: "r-feedback", name: "Odmítání zpětné vazby", description: "Reaguje defenzivně, zpětnou vazbu bagatelizuje nebo ignoruje." },
-    { id: "r-netransparentnost", name: "Zamlčování problémů", description: "Netransparentnost, problémy nehlásí včas, něco zakrývá." },
-    { id: "r-nezajem", name: "Nezájem o obor a práci", description: "Práce jen „za peníze“, žádná zvídavost ani vlastní iniciativa." },
-    { id: "r-negativita", name: "Negativita vůči týmu / klientům", description: "Pomlouvání, cynismus, opakovaná kritika bez návrhu řešení." },
-    { id: "r-ocekavani", name: "Nesoulad očekávání", description: "Jiná představa o roli, penězích, home office, kariérním růstu nebo tempu." },
-    { id: "r-odchod", name: "Signály odchodu", description: "Zmínky o hledání jiné práce, nejistota, jestli zůstat." },
-    { id: "r-pretizeni", name: "Přetížení / izolace", description: "Známky vyhoření, stresu, pocit osamění nebo nedostatku podpory." },
-    { id: "r-spolehlivost", name: "Nespolehlivost", description: "Nedodržuje termíny, sliby nebo domluvená pravidla." },
+    { id: "r-technika", name: "Technické záseky bez řešení", description: "Nefunkční HW, přístupy nebo nástroje, které nikdo neřeší a demotivují." },
+    { id: "r-izolace", name: "Pocit izolace", description: "Necítí se v týmu přivítaný/á, neví, na koho se obrátit." },
+    { id: "r-rozcarovani", name: "Rozčarování / nesoulad s pohovorem", description: "Realita práce neodpovídá tomu, co si slibovali na pohovoru; zklamání z prvních dnů." },
+    { id: "r-pasivita", name: "Pasivita a tápání", description: "Tápe v nástrojích nebo procesech (Asana, Slack, Costlocker) a nesnaží se to napravit." },
+    { id: "r-neni-moje", name: "„To není moje práce“", description: "Vyhýbá se úkolům a nepopulární práci, nepomůže týmu." },
+    { id: "r-stezovani", name: "Toxické stěžování", description: "Stěžuje si bez návrhu řešení, negativita vůči týmu, klientům nebo procesům." },
+    { id: "r-pohodli", name: "Hledání pohodlí", description: "Vyhýbá se diskomfortu, náročným fázím a tlaku." },
+    { id: "r-alibismus", name: "Alibismus a nepřiznání chyby", description: "Neumí přiznat chybu, přehazuje odpovědnost na ostatní." },
+    { id: "r-hodnoty", name: "Rozcházení se s hodnotami", description: "Postoje jdou proti hodnotám 4BROS." },
+    { id: "r-vycerpani", name: "Vyčerpání / přetížení", description: "Známky vyčerpání nebo přetížení – signál, který je potřeba řešit." },
   ],
   checkpoints: [
-    { id: "c-14", day: 14, label: "Po 2 týdnech", focus: "První dojmy, onboarding, jestli realita odpovídá očekávání, co chybí." },
-    { id: "c-30", day: 30, label: "Po 1 měsíci", focus: "Zapojení do týmu, pochopení role, první zkušenost s kulturou Four Bros." },
-    { id: "c-60", day: 60, label: "Po 2 měsících", focus: "Samostatnost, výkon, práce se zpětnou vazbou, vztahy s klienty." },
-    { id: "c-85", day: 85, label: "Před koncem zkušebky", focus: "Celkové zhodnocení, souznění s hodnotami, rozhodnutí o pokračování a další plány." },
+    {
+      id: "f1", day: 7, window: "7. den", duration: "15 min",
+      label: "1. fáze · První pomoc & Vibe check",
+      focus: "HW, přístupy, pocity z prvního týdne.",
+      goal: "Odchytit technické a logistické záseky dřív, než nováčka demotivují, a zjistit první dojem.",
+      questions: [
+        "Jaký byl tvůj 1. týden ve 4BROS na stupnici 1–10 a co to číslo nejvíc ovlivnilo?",
+        "Funguje ti všechno technicky a logisticky (1Password, Asana, Slack, HW, klíče/čip)?",
+        "Víš přesně, za kým v týmu jít, když si s něčím nevěříš nebo nevíš, kde co najít?",
+        "Je něco, co tě během prvního týdne překvapilo nebo kde cítíš chaos?",
+      ],
+      greenCriteria: "Má funkční přístupy, cítí se v týmu přivítaný/á, ví, na koho se obrátit.",
+      redCriteria: "Nefunkční technika bez řešení, pocit izolace, rozčarování z prvních dnů.",
+    },
+    {
+      id: "f2", day: 30, window: "30. den", duration: "30 min",
+      label: "2. fáze · Adaptace & Procesy",
+      focus: "Asana, Slack, Costlocker, kvalita zaškolení.",
+      goal: "Zkontrolovat, jak nováček zapadl do exekutivy a zda správně chápe interní fungování.",
+      questions: [
+        "Sedí realita tvé práce s tím, co jsme si říkali na pohovoru?",
+        "Jak ti vyhovuje tempo a styl zaškolení ze strany tvého Team Leadera?",
+        "Rozumíš našemu fungování v Asaně, Slacku a trackování času, nebo v procesech vnímáš zásek?",
+        "Kde v práci se zatím cítíš nejistý/á a co by ti pomohlo to odbourat?",
+      ],
+      greenCriteria: "Chápe svou roli, ptá se, když neví, chválí podporu týmu.",
+      redCriteria: "Tápání v nástrojích bez snahy o nápravu, pasivita, vyhýbání se úkolům.",
+    },
+    {
+      id: "f3", day: 45, window: "45.–60. den", duration: "30–45 min",
+      label: "3. fáze · Kultura, Tým & Red Flags",
+      focus: "Týmovost, reakce na diskomfort, alibismus vs. proaktivita.",
+      goal: "Otestovat týmovost, reakci na diskomfort, alibismus vs. proaktivitu a prověřit varovné signály.",
+      questions: [
+        "Kdy ses u nás naposledy cítil/a jako týmový hráč? Jak reaguješ, když kolega v týmu nestíhá, ale ty máš své práce taky dost?",
+        "Všichni máme tasky, které nás baví víc a které méně. Jak přistupuješ k věcem, do kterých se ti fakt nechce, ale je potřeba je udělat?",
+        "Jak zvládáš náročnější fáze projektů nebo klientský tlak? Co tě na práci aktuálně nejvíc vyčerpává?",
+        "Když tě u nás něco štve (na procesech, klientech nebo komunikaci), jakým způsobem to řešíš?",
+        "Kdybych se zeptala tvého Team Leadera, v čem jsi pro tým největší přínos a v čem naopak brzda, co by mi řekl/a?",
+      ],
+      greenCriteria: "Ochota pomoct týmu, hledání způsobů „jak to jde“, konstruktivní přístup.",
+      redCriteria: "Toxické stěžování si bez návrhu řešení, věty typu „to není moje práce“, vyhýbání se nepopulárním úkolům, hledání pohodlí.",
+    },
+    {
+      id: "f4", day: 75, window: "75.–80. den", duration: "30 min",
+      label: "4. fáze · Hodnoty & Finální zkušebka",
+      focus: "Sebereflexe, posun, rozhodnutí o pokračování.",
+      goal: "Zhodnotit celkový soulad s hodnotami 4BROS a učinit finální rozhodnutí o pokračování HPP.",
+      questions: [
+        "Která z našich hodnot (Pravda bez výmluv, Chyby jsou příležitost, Makáme – nečekáme, Diskomfort je cesta, Nasloucháme) je ti nejbližší a která se ti v praxi dodržuje nejtěžší?",
+        "Když ses za zkušebku v něčem sekl/a nebo udělal/a chybu, jak ses k tomu postavil/a a co ses z toho naučil/a?",
+        "Co pro tebe v praxi znamená mít ‚ownership‘ nad klientským projektem?",
+        "Chceš u nás dál pokračovat a v jakém směru se chceš rozvíjet v dalším půlroce?",
+      ],
+      greenCriteria: "Vnitřní ztotožnění s kulturou, sebereflexe, chuť dál na sobě makat.",
+      redCriteria: "Neschopnost přiznat chybu, alibismus u odpovědnosti, rozcházení se s hodnotami firmy.",
+    },
   ],
 };
+
+/** Převede data z dřívější verze (check-iny c-14…c-85, obecné hodnoty) na 4fázový systém 4BROS. */
+function migrateDb(db) {
+  if ((db.settings?.version || 1) >= 2) return false;
+  const map = { "c-14": "f1", "c-30": "f2", "c-60": "f3", "c-85": "f4" };
+  for (const p of db.people) {
+    const next = {};
+    for (const [k, v] of Object.entries(p.checkins || {})) next[map[k] || k] = v;
+    p.checkins = next;
+  }
+  db.settings = structuredClone(DEFAULT_SETTINGS);
+  return true;
+}
+
+function plural(n, one, few, many) {
+  return n === 1 ? one : n >= 2 && n <= 4 ? few : many;
+}
 
 const ONBOARDING_DAYS = 90;
 const STATUS_LABEL = { green: "Souzní", orange: "Pozor", red: "Red flag", unknown: "Nezaznělo" };
@@ -151,6 +221,7 @@ async function load() {
     }
   }
   state.db = db;
+  if (migrateDb(state.db)) save();
 }
 
 let saveTimer = null;
@@ -526,6 +597,21 @@ function viewPerson(id) {
     </div>`;
 }
 
+function phaseGuide(cp, done) {
+  const qs = cp.questions || [];
+  if (!cp.goal && !qs.length && !cp.greenCriteria && !cp.redCriteria) return "";
+  return `
+    <details class="guide" ${done ? "" : "open"}>
+      <summary>Tahák na schůzku${qs.length ? ` · ${qs.length} ${plural(qs.length, "otázka", "otázky", "otázek")}` : ""}</summary>
+      ${cp.goal ? `<p class="small" style="margin:10px 0 0"><b>Cíl:</b> ${esc(cp.goal)}</p>` : ""}
+      ${qs.length ? `<ol class="questions">${qs.map((q) => `<li>${esc(q)}</li>`).join("")}</ol>` : ""}
+      <div class="grid grid-2" style="gap:10px">
+        ${cp.greenCriteria ? `<div class="crit green"><b>🟢 Green flag:</b> ${esc(cp.greenCriteria)}</div>` : ""}
+        ${cp.redCriteria ? `<div class="crit red"><b>🔴 Red flag:</b> ${esc(cp.redCriteria)}</div>` : ""}
+      </div>
+    </details>`;
+}
+
 function checkinCard(p, cp, today) {
   const ci = p.checkins?.[cp.id];
   const date = checkinDate(p, cp);
@@ -539,14 +625,19 @@ function checkinCard(p, cp, today) {
   <div class="card checkin ${status || ""}" id="ci-${cp.id}">
     <div class="checkin-head">
       <div>
-        <h3>${esc(cp.label)} <span class="muted small" style="font-weight:400">· den ${cp.day}</span></h3>
-        <div class="small muted">${esc(cp.focus || "")}</div>
+        <h3>${esc(cp.label)}</h3>
+        <div class="row small muted" style="gap:6px;margin-top:4px">
+          <span class="chip blue">${esc(cp.window || `${cp.day}. den`)}</span>
+          ${cp.duration ? `<span class="chip">${esc(cp.duration)}</span>` : ""}
+          <span>${esc(cp.focus || "")}</span>
+        </div>
       </div>
       <div class="row">
         ${overdue ? `<span class="chip red">Po termínu</span>` : done ? `<span class="chip blue">Proběhlo</span>` : `<span class="chip">${relDays(diffDays(today, date))}</span>`}
         ${chip(status)}
       </div>
     </div>
+    ${phaseGuide(cp, done)}
 
     <div class="fields-2" style="margin-top:14px">
       <div>
@@ -605,7 +696,7 @@ function analysisBlock(a) {
     </div>
     <div class="grid grid-2">
       <div class="box">
-        <h4>Hodnoty Four Bros</h4>
+        <h4>Hodnoty 4BROS</h4>
         <ul class="verdict-list">
           ${values.map((v) => `
             <li>${light(v.status === "unknown" ? "" : v.status)}
@@ -703,11 +794,11 @@ function viewSettings() {
 
   return `
     <h1>Nastavení</h1>
-    <p class="muted">Podle těchhle hodnot a signálů AI vyhodnocuje přepisy. Uprav je, aby přesně seděly na Four Bros – čím konkrétnější popis, tím přesnější semafor.</p>
+    <p class="muted">Podle těchhle hodnot a signálů AI vyhodnocuje přepisy. Uprav je, aby přesně seděly na 4BROS – čím konkrétnější popis, tím přesnější semafor.</p>
 
     <div class="stack">
       <div class="card">
-        <h2>Hodnoty a kultura Four Bros</h2>
+        <h2>Hodnoty 4BROS</h2>
         ${listEditor("values", s.values, "Hodnota", "Jak se projevuje v praxi")}
       </div>
 
@@ -718,15 +809,35 @@ function viewSettings() {
 
       <div class="card">
         <h2>Check-iny během adaptace</h2>
-        <p class="small muted">Den = kolikátý den od nástupu se schůzka automaticky naplánuje. U konkrétního člověka jde datum posunout.</p>
-        <div class="edit-list checkpoints">
-          ${s.checkpoints.map((cp, i) => `
-            <div class="item">
-              <input type="number" min="1" max="365" value="${cp.day}" data-edit="checkpoints" data-i="${i}" data-key="day" aria-label="Den">
-              <input value="${esc(cp.label)}" data-edit="checkpoints" data-i="${i}" data-key="label" placeholder="Název">
-              <textarea data-edit="checkpoints" data-i="${i}" data-key="focus" placeholder="Na co se zaměřit" style="min-height:44px">${esc(cp.focus)}</textarea>
-              <button class="btn danger sm" data-action="remove-item" data-kind="checkpoints" data-i="${i}" aria-label="Odebrat">✕</button>
-            </div>`).join("")}
+        <p class="small muted">„Den od nástupu“ určuje, kdy se schůzka automaticky naplánuje do kalendáře. U konkrétního člověka jde datum posunout. Otázky a green/red flags se ukazují u schůzky jako tahák a podle nich se vyhodnocuje přepis.</p>
+        <div class="cp-list">
+          ${s.checkpoints.map((cp, i) => {
+            const f = (key, label, value, { area = false, type = "text", hint = "" } = {}) => `
+              <div>
+                <label for="cp-${i}-${key}">${label}</label>
+                ${area
+                  ? `<textarea id="cp-${i}-${key}" data-edit="checkpoints" data-i="${i}" data-key="${key}" ${hint ? `placeholder="${hint}"` : ""}>${esc(value ?? "")}</textarea>`
+                  : `<input id="cp-${i}-${key}" type="${type}" ${type === "number" ? 'min="1" max="365"' : ""} value="${esc(value ?? "")}" data-edit="checkpoints" data-i="${i}" data-key="${key}" ${hint ? `placeholder="${hint}"` : ""}>`}
+              </div>`;
+            return `
+            <div class="cp-edit">
+              <div class="row between"><h3 style="margin:0">${esc(cp.label || "Nový check-in")}</h3>
+                <button class="btn danger sm" data-action="remove-item" data-kind="checkpoints" data-i="${i}">Odebrat</button></div>
+              <div class="fields-2">
+                ${f("label", "Název", cp.label)}
+                ${f("day", "Den od nástupu (pro kalendář)", cp.day, { type: "number" })}
+                ${f("window", "Časování", cp.window, { hint: "např. 45.–60. den" })}
+                ${f("duration", "Délka", cp.duration, { hint: "např. 30 min" })}
+              </div>
+              ${f("focus", "Hlavní zaměření", cp.focus)}
+              ${f("goal", "Cíl", cp.goal, { area: true })}
+              ${f("questions", "Otázky (každá na nový řádek)", (cp.questions || []).join("\n"), { area: true })}
+              <div class="fields-2">
+                ${f("greenCriteria", "🟢 Green flag", cp.greenCriteria, { area: true })}
+                ${f("redCriteria", "🔴 Red flag", cp.redCriteria, { area: true })}
+              </div>
+            </div>`;
+          }).join("")}
         </div>
         <button class="btn secondary sm" style="margin-top:10px" data-action="add-item" data-kind="checkpoints">+ Přidat check-in</button>
       </div>
@@ -879,47 +990,46 @@ function demoData() {
     id: uid(), name, role, team, lead, email: "", startDate: addDays(t, -daysAgo), checkins: {}, notes: [], createdAt: new Date().toISOString(), demo: true,
   });
   const a = mk("Tereza Nová (ukázka)", "PPC specialistka", "Performance", 40, "Martin");
-  const b = mk("Jakub Malý (ukázka)", "Copywriter", "Content", 70, "Lucie");
-  const c = mk("Eva Svobodová (ukázka)", "Account manažerka", "Klienti", 5, "Petr");
-  const allValues = (status) => DEFAULT_SETTINGS.values.map((v) => ({ name: v.name, status, evidence: "", comment: "" }));
+  const b = mk("Jakub Malý (ukázka)", "Copywriter", "Content", 58, "Lucie");
+  const c = mk("Eva Svobodová (ukázka)", "Account manažerka", "Klienti", 3, "Petr");
+  const vals = (map) => DEFAULT_SETTINGS.values.map((v) => ({ name: v.name, status: "unknown", evidence: "", comment: "", ...(map[v.name] || {}) }));
 
-  a.checkins["c-14"] = {
+  a.checkins.f1 = { date: null, done: true, transcript: "", analysis: null, manualStatus: "green", notes: "Přístupy OK, 1. týden za 9/10." };
+  a.checkins.f2 = {
     date: null, done: true, manualStatus: null, notes: "Domluveno: víc času s Martinem na reporting.",
-    transcript: "HR: Jak se ti zatím daří?\nTereza: Super, nejvíc mě baví, že tady se fakt všechno měří. Hned první týden jsem si udělala vlastní dashboard.\nHR: Co ti chybí?\nTereza: Asi víc zpětné vazby na kampaně, klidně tvrdé, chci se zlepšovat.",
+    transcript: "HR: Sedí realita práce s tím, co jsme si říkali na pohovoru?\nTereza: Jo, úplně. Hned první týden jsem si sama udělala dashboard, protože jsem nechtěla čekat.\nHR: Kde se cítíš nejistá?\nTereza: V Costlockeru jsem se párkrát sekla s trackováním, tak jsem si o tom řekla Martinovi a už to dělám dobře. Klidně mi dávejte i tvrdou zpětnou vazbu.",
     analysis: {
-      overall: "green", headline: "Tereza velmi dobře souzní s kulturou – data, otevřenost, chuť růst.",
-      summary: "Tereza mluví s nadšením o práci s daty a sama si řekla o tvrdší zpětnou vazbu. Projevuje iniciativu (vlastní dashboard). Žádné varovné signály.",
-      values: allValues("unknown").map((v) => ({
-        ...v,
-        ...(v.name === "Data a vědecký přístup" && { status: "green", evidence: "nejvíc mě baví, že tady se fakt všechno měří", comment: "Přirozeně staví na datech." }),
-        ...(v.name === "Radikální otevřenost" && { status: "green", evidence: "Asi víc zpětné vazby na kampaně, klidně tvrdé", comment: "Sama si o zpětnou vazbu říká." }),
-        ...(v.name === "Posouváme se vpřed" && { status: "green", evidence: "Hned první týden jsem si udělala vlastní dashboard.", comment: "Iniciativa bez zadání." }),
-      })),
-      redFlags: [], strengths: ["Iniciativa", "Práce s daty", "Chce zpětnou vazbu"],
-      followUpQuestions: ["Jak ti funguje spolupráce s Martinem?", "Na čem by ses chtěla do konce zkušebky nejvíc zlepšit?"],
-      recommendation: "Zajistit pravidelnou zpětnou vazbu na kampaně (např. týdenní 15min review s Martinem).",
+      overall: "green", headline: "Tereza je proaktivní, přiznává chyby a sama si říká o zpětnou vazbu.",
+      summary: "Realita práce odpovídá pohovoru. Tereza nečeká na zadání (vlastní dashboard), chybu v trackování přiznala a vyřešila a sama chce tvrdou zpětnou vazbu. Žádné varovné signály.",
+      values: vals({
+        "Makáme – nečekáme": { status: "green", evidence: "sama udělala dashboard, protože jsem nechtěla čekat", comment: "Proaktivita bez zadání." },
+        "Chyby jsou příležitost": { status: "green", evidence: "párkrát sekla s trackováním, tak jsem si o tom řekla", comment: "Chybu přiznala a napravila." },
+        "Nasloucháme": { status: "green", evidence: "Klidně mi dávejte i tvrdou zpětnou vazbu.", comment: "O zpětnou vazbu sama stojí." },
+      }),
+      redFlags: [], strengths: ["Proaktivita", "Práce s chybou", "Chce zpětnou vazbu"],
+      followUpQuestions: ["Jak reaguješ, když kolega nestíhá a ty máš práce taky dost?", "Co tě na práci aktuálně nejvíc vyčerpává?"],
+      recommendation: "Ve 3. fázi ověřit týmovost a zvládání klientského tlaku.",
       analyzedAt: new Date().toISOString(), model: "ukázka",
     },
   };
-  b.checkins["c-14"] = { date: null, done: true, transcript: "", analysis: null, manualStatus: "green", notes: "V pohodě, rychle se zapojil." };
-  b.checkins["c-30"] = {
+  b.checkins.f1 = { date: null, done: true, transcript: "", analysis: null, manualStatus: "green", notes: "V pohodě, rychle se zapojil." };
+  b.checkins.f2 = {
     date: null, done: true, manualStatus: null, notes: "",
-    transcript: "HR: Jak hodnotíš první měsíc?\nJakub: Upřímně, čekal jsem víc home office. A ten feedback od klienta minule nebyl fér, za to mohl account, ne já.\nHR: A co tě baví?\nJakub: Psaní mě baví, to jo.",
+    transcript: "HR: Jak hodnotíš první měsíc?\nJakub: Psaní mě baví. Ale ty reporty pro klienty mi přijdou zbytečné, to by mohl dělat account, to fakt není moje práce.\nHR: A ten feedback od klienta minulý týden?\nJakub: Za to mohl account, ne já, špatně mi to zadal.",
     analysis: {
-      overall: "orange", headline: "Jakub má rád psaní, ale objevuje se nesoulad očekávání a přehazování odpovědnosti.",
-      summary: "Jakub má k obsahu pozitivní vztah, zmiňuje ale nenaplněné očekávání ohledně home office a odpovědnost za klientskou výtku přesouvá na kolegu. Zatím ne kritické, ale stojí za otevřený rozhovor.",
-      values: allValues("unknown").map((v) => ({
-        ...v,
-        ...(v.name === "Marketing nás baví" && { status: "green", evidence: "Psaní mě baví, to jo.", comment: "Pozitivní vztah k práci." }),
-        ...(v.name === "Tým a odpovědnost" && { status: "orange", evidence: "za to mohl account, ne já", comment: "Odpovědnost přenáší na kolegu." }),
-      })),
+      overall: "orange", headline: "Jakuba baví psaní, ale objevuje se „to není moje práce“ a přehazování odpovědnosti.",
+      summary: "Jakub má k obsahu pozitivní vztah, nepopulární úkoly ale odmítá jako „ne svou práci“ a za klientskou výtku viní kolegu. Zatím ne kritické, ve 3. fázi je potřeba to otevřít.",
+      values: vals({
+        "Pravda bez výmluv": { status: "orange", evidence: "Za to mohl account, ne já", comment: "Hledá vysvětlení mimo sebe." },
+        "Diskomfort je cesta": { status: "orange", evidence: "to fakt není moje práce", comment: "Vyhýbá se méně oblíbeným úkolům." },
+      }),
       redFlags: [
-        { name: "Nesoulad očekávání", severity: "orange", evidence: "čekal jsem víc home office", comment: "Vyjasnit pravidla a jestli je to pro něj zásadní." },
-        { name: "Svalování viny", severity: "orange", evidence: "za to mohl account, ne já", comment: "Zatím jednorázové, sledovat." },
+        { name: "„To není moje práce“", severity: "orange", evidence: "to fakt není moje práce", comment: "Sledovat, jestli se opakuje." },
+        { name: "Alibismus a nepřiznání chyby", severity: "orange", evidence: "Za to mohl account, ne já", comment: "Zatím jednorázové." },
       ],
       strengths: ["Baví ho psaní"],
-      followUpQuestions: ["Jak teď vnímáš pravidla home office?", "Co bys příště udělal jinak u té klientské výtky?"],
-      recommendation: "Do 2 týdnů krátký rozhovor s Lucií o očekáváních (HO) a o tom, jak u nás pracujeme s chybami.",
+      followUpQuestions: ["Jak přistupuješ k věcem, do kterých se ti nechce, ale je potřeba je udělat?", "Co bys příště u té klientské výtky udělal jinak?"],
+      recommendation: "Ve 3. fázi otevřít téma ownershipu a nepopulárních úkolů, předem se doptat Lucie.",
       analyzedAt: new Date().toISOString(), model: "ukázka",
     },
   };
@@ -1008,7 +1118,7 @@ function bindEvents() {
       case "export-ics": exportIcs(); break;
       case "add-item": {
         const kind = el.dataset.kind;
-        if (kind === "checkpoints") settings().checkpoints.push({ id: "c-" + uid(), day: 45, label: "Nový check-in", focus: "" });
+        if (kind === "checkpoints") settings().checkpoints.push({ id: "c-" + uid(), day: 45, label: "Nový check-in", window: "", duration: "", focus: "", goal: "", questions: [], greenCriteria: "", redCriteria: "" });
         else settings()[kind].push({ id: uid(), name: "", description: "" });
         sortCheckpoints(); save(); render(); break;
       }
@@ -1066,7 +1176,10 @@ function bindEvents() {
     }
     if (el.dataset.edit) {
       const item = settings()[el.dataset.edit][Number(el.dataset.i)];
-      item[el.dataset.key] = el.dataset.key === "day" ? Math.max(1, Number(el.value) || 1) : el.value;
+      const k = el.dataset.key;
+      item[k] = k === "day" ? Math.max(1, Number(el.value) || 1)
+        : k === "questions" ? el.value.split("\n").map((q) => q.trim()).filter(Boolean)
+        : el.value;
       if (el.dataset.edit === "checkpoints" && el.dataset.key === "day") { sortCheckpoints(); render(); }
       save();
     }
