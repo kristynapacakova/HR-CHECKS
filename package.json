@@ -5,10 +5,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "node --env-file-if-exists=.env server.js"
+    "start": "node --env-file-if-exists=.env server.js",
+    "build": "echo \"Statická appka – není co buildit.\""
   },
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0"
