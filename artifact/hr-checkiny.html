@@ -468,7 +468,11 @@ const DEFAULT_SETTINGS = {
 
 /** Převede data z dřívější verze (check-iny c-14…c-85, obecné hodnoty) na 4fázový systém 4BROS. */
 function migrateDb(db) {
-  if ((db.settings?.version || 1) >= 2) return false;
+  // Ukázkoví lidé z dřívější verze appky (označení demo: true) se odstraní.
+  const before = db.people.length;
+  db.people = db.people.filter((p) => !p.demo);
+  const removedDemo = db.people.length !== before;
+  if ((db.settings?.version || 1) >= 2) return removedDemo;
   const map = { "c-14": "f1", "c-30": "f2", "c-60": "f3", "c-85": "f4" };
   for (const p of db.people) {
     const next = {};
@@ -944,7 +948,7 @@ function viewDashboard() {
     return storeBanner() + emptyState(
       "Vítej v HR check-inech 👋",
       "Přidej prvního nováčka. Appka mu podle data nástupu naplánuje check-iny na první 3 měsíce a pak ti z přepisů ukáže semafor.",
-      `<div class="row" style="justify-content:center"><button class="btn" data-action="add-person">Přidat člověka</button><button class="btn secondary" data-action="load-demo">Vyzkoušet na ukázkových datech</button></div>`,
+      `<div class="row" style="justify-content:center"><button class="btn" data-action="add-person">Přidat člověka</button></div>`,
     );
   }
   const today = todayIso();
@@ -1574,60 +1578,6 @@ function outlookLink(p, cp, date) {
   });
 }
 
-// ---------- demo data ----------
-
-function demoData() {
-  const t = todayIso();
-  const mk = (name, role, team, daysAgo, lead) => ({
-    id: uid(), name, role, team, lead, email: "", startDate: addDays(t, -daysAgo), checkins: {}, notes: [], createdAt: new Date().toISOString(), demo: true,
-  });
-  const a = mk("Tereza Nová (ukázka)", "PPC specialistka", "Performance", 40, "Martin");
-  const b = mk("Jakub Malý (ukázka)", "Copywriter", "Content", 58, "Lucie");
-  const c = mk("Eva Svobodová (ukázka)", "Account manažerka", "Klienti", 3, "Petr");
-  const vals = (map) => DEFAULT_SETTINGS.values.map((v) => ({ name: v.name, status: "unknown", evidence: "", comment: "", ...(map[v.name] || {}) }));
-
-  a.checkins.f1 = { date: null, done: true, transcript: "", analysis: null, manualStatus: "green", notes: "Přístupy OK, 1. týden za 9/10." };
-  a.checkins.f2 = {
-    date: null, done: true, manualStatus: null, notes: "Domluveno: víc času s Martinem na reporting.",
-    transcript: "HR: Sedí realita práce s tím, co jsme si říkali na pohovoru?\nTereza: Jo, úplně. Hned první týden jsem si sama udělala dashboard, protože jsem nechtěla čekat.\nHR: Kde se cítíš nejistá?\nTereza: V Costlockeru jsem se párkrát sekla s trackováním, tak jsem si o tom řekla Martinovi a už to dělám dobře. Klidně mi dávejte i tvrdou zpětnou vazbu.",
-    analysis: {
-      overall: "green", headline: "Tereza je proaktivní, přiznává chyby a sama si říká o zpětnou vazbu.",
-      summary: "Realita práce odpovídá pohovoru. Tereza nečeká na zadání (vlastní dashboard), chybu v trackování přiznala a vyřešila a sama chce tvrdou zpětnou vazbu. Žádné varovné signály.",
-      values: vals({
-        "Makáme – nečekáme": { status: "green", evidence: "sama udělala dashboard, protože jsem nechtěla čekat", comment: "Proaktivita bez zadání." },
-        "Chyby jsou příležitost": { status: "green", evidence: "párkrát sekla s trackováním, tak jsem si o tom řekla", comment: "Chybu přiznala a napravila." },
-        "Nasloucháme": { status: "green", evidence: "Klidně mi dávejte i tvrdou zpětnou vazbu.", comment: "O zpětnou vazbu sama stojí." },
-      }),
-      redFlags: [], strengths: ["Proaktivita", "Práce s chybou", "Chce zpětnou vazbu"],
-      followUpQuestions: ["Jak reaguješ, když kolega nestíhá a ty máš práce taky dost?", "Co tě na práci aktuálně nejvíc vyčerpává?"],
-      recommendation: "Ve 3. fázi ověřit týmovost a zvládání klientského tlaku.",
-      analyzedAt: new Date().toISOString(), model: "ukázka",
-    },
-  };
-  b.checkins.f1 = { date: null, done: true, transcript: "", analysis: null, manualStatus: "green", notes: "V pohodě, rychle se zapojil." };
-  b.checkins.f2 = {
-    date: null, done: true, manualStatus: null, notes: "",
-    transcript: "HR: Jak hodnotíš první měsíc?\nJakub: Psaní mě baví. Ale ty reporty pro klienty mi přijdou zbytečné, to by mohl dělat account, to fakt není moje práce.\nHR: A ten feedback od klienta minulý týden?\nJakub: Za to mohl account, ne já, špatně mi to zadal.",
-    analysis: {
-      overall: "orange", headline: "Jakuba baví psaní, ale objevuje se „to není moje práce“ a přehazování odpovědnosti.",
-      summary: "Jakub má k obsahu pozitivní vztah, nepopulární úkoly ale odmítá jako „ne svou práci“ a za klientskou výtku viní kolegu. Zatím ne kritické, ve 3. fázi je potřeba to otevřít.",
-      values: vals({
-        "Pravda bez výmluv": { status: "orange", evidence: "Za to mohl account, ne já", comment: "Hledá vysvětlení mimo sebe." },
-        "Diskomfort je cesta": { status: "orange", evidence: "to fakt není moje práce", comment: "Vyhýbá se méně oblíbeným úkolům." },
-      }),
-      redFlags: [
-        { name: "„To není moje práce“", severity: "orange", evidence: "to fakt není moje práce", comment: "Sledovat, jestli se opakuje." },
-        { name: "Alibismus a nepřiznání chyby", severity: "orange", evidence: "Za to mohl account, ne já", comment: "Zatím jednorázové." },
-      ],
-      strengths: ["Baví ho psaní"],
-      followUpQuestions: ["Jak přistupuješ k věcem, do kterých se ti nechce, ale je potřeba je udělat?", "Co bys příště u té klientské výtky udělal jinak?"],
-      recommendation: "Ve 3. fázi otevřít téma ownershipu a nepopulárních úkolů, předem se doptat Lucie.",
-      analyzedAt: new Date().toISOString(), model: "ukázka",
-    },
-  };
-  b.notes.push({ id: uid(), createdAt: new Date().toISOString(), text: "Lucie říkala, že termíny drží, jen je víc ve stresu před deadlinem." });
-  return [a, b, c];
-}
 
 // =====================================================================
 // Události
@@ -1676,8 +1626,6 @@ function bindEvents() {
         break;
       case "toggle-archived":
         state.showArchived = el.checked; render(); break;
-      case "load-demo":
-        state.db.people.push(...demoData()); save(); render(); toast("Ukázková data nahrána – smažeš je v detailu člověka");
         break;
       case "upload":
         pickFile(".txt,.md,.vtt,.srt,text/plain", (f) => readFileAsTranscript(f, id, cp));
